@@ -2,68 +2,193 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>mcToken Extractor (Local Only)</title>
+  <title>☁️ mcToken Extractor (Cloud UI)</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      padding: 40px;
-      background: #f0f0f0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(to right, #e0f7fa, #f1f8e9);
+      margin: 0;
+      padding: 40px 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      color: #333;
     }
+
+    h2 {
+      text-align: center;
+      color: #2c3e50;
+      margin-bottom: 30px;
+      text-shadow: 1px 1px 0 white;
+    }
+
+    .cloud-container {
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+      padding: 30px;
+      width: 100%;
+      max-width: 740px;
+      box-sizing: border-box;
+      margin-bottom: 30px;
+    }
+
     textarea {
       width: 100%;
       height: 200px;
       font-family: monospace;
-      padding: 10px;
+      padding: 12px;
       font-size: 14px;
-      border-radius: 5px;
+      border-radius: 12px;
       border: 1px solid #ccc;
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+      resize: vertical;
+      background: #fefefe;
+      margin-bottom: 20px;
+      box-sizing: border-box;
     }
-    button, label {
-      margin-top: 10px;
-      padding: 10px 16px;
+
+    .button-group {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    button, label[for="fileInput"] {
+      padding: 10px 18px;
       font-size: 15px;
       border: none;
-      border-radius: 6px;
+      border-radius: 8px;
       cursor: pointer;
-      display: inline-block;
+      transition: all 0.15s ease;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      position: relative;
     }
+
+    button:active, label[for="fileInput"]:active {
+      transform: scale(0.96);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.15) inset;
+    }
+
     button {
       background-color: #4CAF50;
       color: white;
     }
+
     button:hover {
       background-color: #45a049;
     }
+
+    label[for="fileInput"] {
+      background-color: #2196F3;
+      color: white;
+    }
+
+    label[for="fileInput"]:hover {
+      background-color: #1976D2;
+    }
+
     input[type="file"] {
       display: none;
     }
+
     .token-item {
-      background: #fff;
-      padding: 10px;
-      margin: 8px 0;
-      border-left: 5px solid #4CAF50;
-      border-radius: 4px;
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+      padding: 24px 30px;
+      width: 100%;
+      max-width: 740px;
+      box-sizing: border-box;
+      margin-bottom: 20px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      word-break: break-all;
+      transition: transform 0.2s;
     }
+
+    .token-item:hover {
+      transform: translateY(-4px);
+    }
+
+    .token-label {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-grow: 1;
+      flex-wrap: wrap;
+    }
+
+    input[type="checkbox"] {
+      transform: scale(1.3);
+      cursor: pointer;
+    }
+
+    .username-box {
+      background-color: #f5f5f5;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      padding: 4px 8px;
+      font-family: monospace;
+      cursor: pointer;
+      user-select: none;
+      transition: background-color 0.2s ease, opacity 0.1s ease;
+      opacity: 1;
+    }
+
+    .username-box:hover {
+      background-color: #e0e0e0;
+    }
+
     .token-text {
       font-family: monospace;
+      font-size: 14px;
+    }
+
+    .copy-btn {
+      background-color: #607D8B;
+      color: white;
+      transition: background-color 0.2s ease;
+    }
+
+    .copy-btn:hover {
+      background-color: #455A64;
+    }
+
+    #resultBox {
+      width: 100%;
+      max-width: 740px;
+      margin-top: 20px;
+    }
+
+    #resultBox p {
+      font-style: italic;
+      color: #888;
+      text-align: center;
+    }
+
+    @media (max-width: 600px) {
+      .token-item, .cloud-container {
+        padding: 20px;
+      }
     }
   </style>
 </head>
 <body>
 
-  <h2>mcToken Extractor (Local Only)</h2>
+  <h2>☁️ mcToken Extractor (Cloud UI)</h2>
 
-  <textarea id="inputText" placeholder="Paste one entry per line..."></textarea><br>
+  <div class="cloud-container">
+    <textarea id="inputText" placeholder="Paste one entry per line..."></textarea>
+    <div class="button-group">
+      <button onclick="extractTokens()">🔍 Extract mcTokens</button>
+      <label for="fileInput">📂 Load from TXT file</label>
+      <input type="file" id="fileInput" accept=".txt" onchange="handleFile(this)">
+    </div>
+  </div>
 
-  <button onclick="extractTokens()">Extract mcTokens</button>
-  <label for="fileInput" style="background-color:#2196F3; color:white;">📂 Load from TXT file</label>
-  <input type="file" id="fileInput" accept=".txt" onchange="handleFile(this)">
-
-  <div id="resultBox" style="margin-top:30px;"></div>
+  <div id="resultBox"></div>
 
   <script>
     function extractTokens() {
@@ -76,9 +201,9 @@
 
       lines.forEach((line) => {
         line = line.trim();
-
         const marker = 'Accesstoken:eyJra';
         const markerIndex = line.indexOf(marker);
+
         if (markerIndex !== -1) {
           const tokenStart = markerIndex + 'Accesstoken:'.length;
           const tokenEnd = line.indexOf('|', tokenStart);
@@ -87,23 +212,70 @@
             const fullToken = line.substring(tokenStart, tokenEnd).trim();
             const shortToken = fullToken.substring(0, 8) + '...';
 
+            let mcName = 'Unknown';
+            const mcNameMatch = line.match(/McName:([^\s|]+)/);
+            if (mcNameMatch && mcNameMatch[1]) {
+              mcName = mcNameMatch[1];
+            }
+
             const div = document.createElement('div');
             div.className = 'token-item';
 
-            const span = document.createElement('span');
-            span.className = 'token-text';
-            span.textContent = shortToken;
+            const label = document.createElement('label');
+            label.className = 'token-label';
 
-            const btn = document.createElement('button');
-            btn.textContent = 'Copy';
-            btn.onclick = () => {
-              navigator.clipboard.writeText(fullToken).then(() => {
-                btn.textContent = '✅ Copied';
-                setTimeout(() => btn.textContent = 'Copy', 1500);
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.title = 'Mark as used';
+
+            const usernameTag = document.createElement('span');
+            usernameTag.className = 'username-box';
+            usernameTag.textContent = mcName;
+            usernameTag.title = 'Click to copy username';
+
+            usernameTag.onclick = () => {
+              navigator.clipboard.writeText(mcName).then(() => {
+                checkbox.checked = true;
+                usernameTag.style.opacity = '0';
+                setTimeout(() => {
+                  usernameTag.textContent = '✅ Copied!';
+                  usernameTag.style.opacity = '1';
+
+                  setTimeout(() => {
+                    usernameTag.style.opacity = '0';
+                    setTimeout(() => {
+                      usernameTag.textContent = mcName;
+                      usernameTag.style.opacity = '1';
+                    }, 100);
+                  }, 800);
+                }, 100);
               });
             };
 
-            div.appendChild(span);
+            const tokenInfo = document.createElement('div');
+            tokenInfo.className = 'token-text';
+            tokenInfo.innerHTML = `Token: <code>${shortToken}</code>`;
+
+            label.appendChild(checkbox);
+            label.appendChild(usernameTag);
+            label.appendChild(tokenInfo);
+
+            const btn = document.createElement('button');
+            btn.className = 'copy-btn';
+            btn.textContent = 'Copy Token';
+
+            btn.onclick = () => {
+              navigator.clipboard.writeText(fullToken).then(() => {
+                btn.textContent = '✅ Copied!';
+                btn.disabled = true;
+                setTimeout(() => {
+                  btn.textContent = 'Copy Token';
+                  btn.disabled = false;
+                }, 1000);
+              });
+            };
+
+            div.appendChild(label);
             div.appendChild(btn);
             resultBox.appendChild(div);
             count++;

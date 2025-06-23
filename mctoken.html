@@ -213,10 +213,21 @@
             const shortToken = fullToken.substring(0, 8) + '...';
 
             let mcName = 'Unknown';
-            const mcNameMatch = line.match(/McName:([^\s|]+)/);
+            let mcNameMatch = line.match(/McName:([^\s|]+)/);
+
             if (mcNameMatch && mcNameMatch[1]) {
               mcName = mcNameMatch[1];
+              if (mcName.length > 16) {
+                const start = line.indexOf('McName:') + 'McName:'.length;
+                const end = line.indexOf('Accesstoken:', start);
+                if (end !== -1) {
+                  mcName = line.substring(start, end).trim();
+                } else {
+                  mcName = 'Unknown';
+                }
+              }
             }
+
 
             const div = document.createElement('div');
             div.className = 'token-item';

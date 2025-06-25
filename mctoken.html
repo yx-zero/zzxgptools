@@ -103,8 +103,8 @@
       box-sizing: border-box;
       margin-bottom: 20px;
       display: flex;
-      justify-content: space-between;
-      align-items: center;
+      flex-direction: column;
+      align-items: flex-start;
       transition: transform 0.2s;
     }
 
@@ -139,6 +139,18 @@
 
     .username-box:hover {
       background-color: #e0e0e0;
+    }
+
+    .username-box.clickable {
+      background-color: #e3f2fd;
+      border: 1px solid #90caf9;
+      color: #0d47a1;
+      font-weight: 500;
+      transition: all 0.2s ease;
+    }
+
+    .username-box.clickable:hover {
+      background-color: #bbdefb;
     }
 
     .token-text {
@@ -213,7 +225,7 @@
             const shortToken = fullToken.substring(0, 8) + '...';
 
             let mcName = 'Unknown';
-            let mcNameMatch = line.match(/McName:([^\s|]+)/);
+            const mcNameMatch = line.match(/McName:([^\s|]+)/);
 
             if (mcNameMatch && mcNameMatch[1]) {
               mcName = mcNameMatch[1];
@@ -222,15 +234,29 @@
                 const end = line.indexOf('Accesstoken:', start);
                 if (end !== -1) {
                   mcName = line.substring(start, end).trim();
-                } else {
-                  mcName = 'Unknown';
                 }
               }
             }
 
+            let email = 'unknown@example.com';
+            let pass = 'unknown';
+            const emailPassMatch = line.match(/\[1\](.*?)(\s*\|)/);
+            if (emailPassMatch && emailPassMatch[1]) {
+              const parts = emailPassMatch[1].split(':');
+              if (parts.length >= 2) {
+                email = parts[0].trim();
+                pass = parts.slice(1).join(':').trim();
+              }
+            }
 
             const div = document.createElement('div');
             div.className = 'token-item';
+
+            const topRow = document.createElement('div');
+            topRow.style.display = 'flex';
+            topRow.style.justifyContent = 'space-between';
+            topRow.style.alignItems = 'center';
+            topRow.style.width = '100%';
 
             const label = document.createElement('label');
             label.className = 'token-label';
@@ -239,27 +265,22 @@
             checkbox.type = 'checkbox';
             checkbox.title = 'Mark as used';
 
+            const mcLabel = document.createElement('span');
+            mcLabel.style.fontWeight = 'bold';
+            mcLabel.textContent = 'mc name:';
+
             const usernameTag = document.createElement('span');
-            usernameTag.className = 'username-box';
+            usernameTag.className = 'username-box clickable';
             usernameTag.textContent = mcName;
             usernameTag.title = 'Click to copy username';
 
             usernameTag.onclick = () => {
               navigator.clipboard.writeText(mcName).then(() => {
                 checkbox.checked = true;
-                usernameTag.style.opacity = '0';
+                usernameTag.textContent = '✅ Copied!';
                 setTimeout(() => {
-                  usernameTag.textContent = '✅ Copied!';
-                  usernameTag.style.opacity = '1';
-
-                  setTimeout(() => {
-                    usernameTag.style.opacity = '0';
-                    setTimeout(() => {
-                      usernameTag.textContent = mcName;
-                      usernameTag.style.opacity = '1';
-                    }, 100);
-                  }, 800);
-                }, 100);
+                  usernameTag.textContent = mcName;
+                }, 1000);
               });
             };
 
@@ -268,26 +289,77 @@
             tokenInfo.innerHTML = `Token: <code>${shortToken}</code>`;
 
             label.appendChild(checkbox);
+            label.appendChild(mcLabel);
             label.appendChild(usernameTag);
             label.appendChild(tokenInfo);
+            topRow.appendChild(label);
 
-            const btn = document.createElement('button');
-            btn.className = 'copy-btn';
-            btn.textContent = 'Copy Token';
-
-            btn.onclick = () => {
+            const tokenBtn = document.createElement('button');
+            tokenBtn.className = 'copy-btn';
+            tokenBtn.textContent = 'Copy Token';
+            tokenBtn.onclick = () => {
               navigator.clipboard.writeText(fullToken).then(() => {
-                btn.textContent = '✅ Copied!';
-                btn.disabled = true;
+                tokenBtn.textContent = '✅ Copied!';
+                tokenBtn.disabled = true;
                 setTimeout(() => {
-                  btn.textContent = 'Copy Token';
-                  btn.disabled = false;
+                  tokenBtn.textContent = 'Copy Token';
+                  tokenBtn.disabled = false;
                 }, 1000);
               });
             };
 
-            div.appendChild(label);
-            div.appendChild(btn);
+            topRow.appendChild(tokenBtn);
+
+            const secondRow = document.createElement('div');
+            secondRow.style.display = 'flex';
+            secondRow.style.justifyContent = 'flex-start';
+            secondRow.style.alignItems = 'center';
+            secondRow.style.width = '100%';
+            secondRow.style.marginTop = '12px';
+            secondRow.style.flexWrap = 'wrap';
+
+            const emailPassLabel = document.createElement('span');
+            emailPassLabel.style.marginRight = '10px';
+            emailPassLabel.style.fontWeight = 'bold';
+            emailPassLabel.textContent = 'email pass:';
+
+            const emailTag = document.createElement('span');
+            emailTag.className = 'username-box clickable';
+            emailTag.textContent = email;
+            emailTag.title = 'Click to copy email';
+            emailTag.onclick = () => {
+              navigator.clipboard.writeText(email).then(() => {
+                emailTag.textContent = '✅ Copied!';
+                setTimeout(() => {
+                  emailTag.textContent = email;
+                }, 1000);
+              });
+            };
+
+            const colon = document.createElement('span');
+            colon.textContent = ' : ';
+            colon.style.padding = '0 6px';
+
+            const passTag = document.createElement('span');
+            passTag.className = 'username-box clickable';
+            passTag.textContent = pass;
+            passTag.title = 'Click to copy password';
+            passTag.onclick = () => {
+              navigator.clipboard.writeText(pass).then(() => {
+                passTag.textContent = '✅ Copied!';
+                setTimeout(() => {
+                  passTag.textContent = pass;
+                }, 1000);
+              });
+            };
+
+            secondRow.appendChild(emailPassLabel);
+            secondRow.appendChild(emailTag);
+            secondRow.appendChild(colon);
+            secondRow.appendChild(passTag);
+
+            div.appendChild(topRow);
+            div.appendChild(secondRow);
             resultBox.appendChild(div);
             count++;
           }
